@@ -1,0 +1,8 @@
+1. What do you want to cook with?
+2. Set strictness for sticking with ingredients
+3. Set what kind of dish (drink, breakfast, lunch, dinner, side)
+4. Add any notes before generating ideas
+5. Generate ideas for what to cook then prompt the user to choose
+6. Set recipe complexity level. (easy medium hard etc)
+7. Generate the recipe and add an option to generate a grocery list based on what the user doesn't have.
+8. Have a place to ask questions about the recipe.
