@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/C63F/aa7PRFdUY/*/L8z5X5t9SK5Ux/*/5U+6D/*" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <title>Chef-GPT</title>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center my-4">Chef-GPT: Your personal sous-chef</h1>
+    <div class="my-4 border-bottom"></div>
+
+    <h2 class="text-left text-primary fw-bold">Ingredients</h2>
+    <form id="ingredient-form">
+      <div class="mb-3">
+        <p for="textbox" class="fs-5 text-muted">List possible cooking ingredients; not all will be used.</label>
+        <ul id="ingredient-list" class="ingredient-list">
+          {% for ingredient in ingredients %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient }}<button class="btn btn-danger delete-button"><i class="bi bi-x"></i></button></li>
+          {% endfor %}
+        </ul>
+        <input type="text" class="form-control" id="textbox" name="textbox" autocomplete="off">
+      </div>
+      <button type="submit" class="btn btn-primary mb-3">Add Ingredient</button>
+      <div class="my-4 border-bottom"></div>
+
+      <h2 class="text-left text-primary fw-bold mt-5">Settings</h2>
+      <p for="slider" class="fs-5 text-muted mt-3">How closely should the model follow your ingredients?</label>
+      <input type="range" class="form-range" id="slider" name="slider" min="1" max="3">
+      <div id="slider-value" style="text-align:center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>
+      <div class="my-4 border-bottom"></div>
+
+      <div class="mb-3">
+        <p for="meal-type-select" class="fs-5 text-muted mt-4">Which meal are you looking for?</label>
+        <select class="form-select  mt-2" id="meal-type-select" name="meal-type">
+          <option value="breakfast">Breakfast</option>
+          <option value="lunch">Lunch</option>
+          <option value="dinner">Dinner</option>
+          <option value="side dish">Side dish</option>
+          <option value="dessert">Dessert</option>
+        </select>
+      </div>
+      <div class="my-4 border-bottom"></div>
+
+      <div class="mb-3">
+        <p for="note-text" class="fs-5 text-muted mt-4">Any additional notes?</p>
+        <input type="text" class="form-control" id="note-text" name="note-text" placeholder="Add your note here" autocomplete="off">
+      </div>
+      <div class="my-4 border-bottom"></div>
+
+      <h2 class="text-left text-primary fw-bold mt-5">Decide What To Make</h2>
+      <p for="meal-type-select" class="fs-5 text-muted mt-2">Let's ask Chef-GPT for some meal ideas.<br></label>
+      <button id="meal-ideas-btn" type="submit" class="btn btn-primary mb-3 mt-3">Generate Meal Ideas</button>
+
+      <div id="meal-ideas-container">
+        <ul id="meal-ideas-list"></ul>
+      </div>
+
+      <div id="recipe-container"></div>
+
+
+    </form>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Cs7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+  
+  <script>
+    const ingredientAdherence = document.getElementById('slider').value;
+    const mealType = document.getElementById('meal-type-select').value;
+    const notes = document.getElementById('note-text').value;
+
+    const mealIdeasBtn = document.getElementById('meal-ideas-btn');
+
+    mealIdeasBtn.addEventListener('click', function() {
+      const mealBtnPos = document.getElementById("meal-ideas-btn").getBoundingClientRect().top + window.pageYOffset;
+      const scrollPosition = mealBtnPos - 250;
+      
+      fetch('/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              'getIdeas': "True",
+              'ingredientAdherence': document.getElementById('slider').value,
+              'mealType': document.getElementById('meal-type-select').value,
+              'notes': document.getElementById('note-text').value
+            })
+      }).then(response => response.json())
+      .then(data => {
+        const mealIdeas = data.meal_ideas;
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('btn-group-vertical', 'd-flex', 'justify-content-center', 'mx-auto');
+        buttonContainer.style.maxWidth = '600px';
+        mealIdeas.forEach((idea) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.classList.add('btn', 'btn-primary', 'mb-2');
+          button.textContent = idea;
+          button.addEventListener('click', function() {
+            // Send a POST request to the Flask code with the idea as a parameter
+            fetch('/recipe', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                'idea': idea
+              })
+            })
+            .then(response => response.json())
+            .then(recipe => {
+
+              const Title = recipe.Title
+              const Ingredients = recipe.Ingredients
+              const Directions = recipe.Directions
+              const Chef_Notes = recipe.ChefNotes
+
+              // create a new Bootstrap card element
+              const recipeCard = document.createElement('div');
+              recipeCard.classList.add('card', 'shadow', 'mb-3');
+
+              // create the card header with the recipe title
+              const cardHeader = document.createElement('div');
+              cardHeader.classList.add('card-header');
+              cardHeader.textContent = Title;
+              recipeCard.appendChild(cardHeader);
+
+              // create the card body with the recipe ingredients and directions
+              const cardBody = document.createElement('div');
+              cardBody.classList.add('card-body');
+
+              // ingredient header
+              const ingredientsHeader = document.createElement('h5');
+              ingredientsHeader.classList.add('card-title', 'mt-3');
+              ingredientsHeader.textContent = 'Ingredients:';
+              cardBody.appendChild(ingredientsHeader);
+
+              // add the ingredient list
+              const ingredientList = document.createElement('ul');
+              ingredientList.classList.add('list-group', 'list-group-flush');
+              Ingredients.forEach(ingredient => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('list-group-item');
+                listItem.textContent = ingredient;
+                ingredientList.appendChild(listItem);
+              });
+              cardBody.appendChild(ingredientList);
+
+              // add the directions
+              const directionsHeader = document.createElement('h5');
+              directionsHeader.classList.add('card-title', 'mt-3');
+              directionsHeader.textContent = 'Directions:';
+              cardBody.appendChild(directionsHeader);
+
+              const directionsList = document.createElement('ol');
+              Directions.forEach(direction => {
+                const listItem = document.createElement('li');
+                listItem.textContent = direction;
+                directionsList.appendChild(listItem);
+              });
+              cardBody.appendChild(directionsList);
+
+              //chef's notes header
+              const notesHeader = document.createElement('h5');
+              notesHeader.classList.add('card-title', 'mt-3');
+              notesHeader.textContent = 'Chef Notes:';
+              cardBody.appendChild(notesHeader);
+
+              const notesBody = document.createElement('div');
+              notesBody.classList.add('card-body');
+              notesBody.textContent = Chef_Notes;
+              cardBody.appendChild(notesBody);
+              
+              recipeCard.appendChild(cardBody);
+
+              // Create a new div element
+              const recipeContainer = document.createElement("div");
+              recipeContainer.id = "recipe-container";
+              recipeContainer.style.maxWidth = "800px";
+              recipeContainer.style.margin = "auto";
+              recipeContainer.style.display = "block";
+              recipeContainer.style.marginTop = "30px";
+              recipeContainer.appendChild(recipeCard);
+              document.body.appendChild(recipeContainer);
+            });
+          });
+          buttonContainer.appendChild(button);
+        });
+        const oldButtonContainer = document.getElementById('meal-ideas-container');
+        if (oldButtonContainer) {
+          oldButtonContainer.remove();
+        }
+        buttonContainer.id = 'meal-ideas-container';
+
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: 'smooth'
+        });
+
+        // Insert the new meal idea container element before the existing recipe container element, if it exists
+        const recipeContainer = document.getElementById('recipe-container');
+
+        if (recipeContainer) {
+          recipeContainer.parentNode.insertBefore(buttonContainer, recipeContainer);
+        } else {
+          document.body.appendChild(buttonContainer);
+        }
+      });
+    });
+
+  </script>
+
+  <script>
+    const slider = document.getElementById('slider');
+    const sliderValue = document.getElementById('slider-value');
+
+    slider.addEventListener('input', () => {
+      switch (slider.value) {
+        case '1':
+          sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Only ingredients from your list.</div>';
+          break;
+        case '2':
+          sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>';
+          break;
+        case '3':
+          sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Your ingredients for loose inspiration.</div>';
+          break;
+      }
+    });
+
+  </script>
+
+  <script>
+    const form = document.getElementById('ingredient-form');
+    const list = document.getElementById('ingredient-list');
+    
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const input = document.getElementById('textbox');
+      const ingredient = input.value.trim();
+      if (ingredient) {
+        const listItem = document.createElement('li');
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-danger delete-button';
+        deleteButton.innerHTML = '<i class="bi bi-x"></i>';
+        deleteButton.addEventListener('click', () => {
+          list.removeChild(listItem);
+          fetch('/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              'remove': 'True',
+              'textbox': ingredient
+            })
+          }).then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              console.log('Ingredient added successfully.');
+            } else {
+              console.log('Failed to add ingredient.');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+          });
+        listItem.textContent = ingredient;
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.appendChild(deleteButton);
+        list.insertBefore(listItem, list.firstChild);
+        input.value = '';
+
+        fetch('/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            'remove': 'False',
+            'textbox': ingredient
+          })
+        }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('Ingredient added successfully.');
+          } else {
+            console.log('Failed to add ingredient.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
