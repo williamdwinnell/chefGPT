@@ -5,51 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/C63F/aa7PRFdUY/*/L8z5X5t9SK5Ux/*/5U+6D/*" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
   <title>Chef-GPT</title>
 </head>
 <body>
   <div class="container">
-    <h1 class="text-center my-4">Chef-GPT: Your personal sous-chef</h1>
-    <div class="my-4 border-bottom"></div>
+    <div class="jumbotron text-center" style="background-color: #f8f9fa;">
+      
+      <img src="/static/titleicon.png" alt="Image Description"  width="12.5%" height="12.5%" style="padding-top: 25px;">
+      <h1 class="display-3" style="font-size: 2.5rem; padding-top: 5px;">Get Cooking with Chef-GPT</h1>
 
+      <hr class="my-4">
+      <p class="lead">Your Personal Sous-Chef for Creative Culinary Adventures</p>
+    </div>
+    
+
+    <div class="border p-3 mt-5">
     <h2 class="text-left text-primary fw-bold">Ingredients</h2>
     <form id="ingredient-form">
       <div class="mb-3">
-        <p for="textbox" class="fs-5 text-muted">List possible cooking ingredients; not all will be used.</label>
-        <ul id="ingredient-list" class="ingredient-list">
-          {% for ingredient in ingredients %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient }}<button class="btn btn-danger delete-button"><i class="bi bi-x"></i></button></li>
-          {% endfor %}
-        </ul>
-        <input type="text" class="form-control" id="textbox" name="textbox" autocomplete="off">
+        <label for="textbox" class="form-label fs-5 text-muted">List possible cooking ingredients for the recipe to include.</label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="textbox" name="textbox" autocomplete="off" placeholder="Enter an ingredient...">
+          <button type="submit" class="btn btn-primary">Add</button>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary mb-3">Add Ingredient</button>
-      <div class="my-4 border-bottom"></div>
+    </form>
 
-      <h2 class="text-left text-primary fw-bold mt-5">Settings</h2>
-      <p for="slider" class="fs-5 text-muted mt-3">How closely should the model follow your ingredients?</label>
-      <input type="range" class="form-range" id="slider" name="slider" min="1" max="3">
-      <div id="slider-value" style="text-align:center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>
-      <div class="my-4 border-bottom"></div>
+    <div class="my-4 border-bottom"></div>
 
-      <div class="mb-3">
-        <p for="meal-type-select" class="fs-5 text-muted mt-4">Which meal are you looking for?</label>
-        <select class="form-select  mt-2" id="meal-type-select" name="meal-type">
-          <option value="breakfast">Breakfast</option>
-          <option value="lunch">Lunch</option>
-          <option value="dinner">Dinner</option>
-          <option value="side dish">Side dish</option>
-          <option value="dessert">Dessert</option>
-        </select>
+    <div class="ingredient-scrollable">
+      <ul id="ingredient-list" class="list-group">
+        {% for ingredient in ingredients %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient }}<button class="btn btn-danger delete-button"><i class="bi bi-x"></i></button></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+    <div class="border p-3 mt-5">
+      <div class="container mt-5">
+        <h2 class="text-left text-primary fw-bold">Settings</h2>
+        <form>
+          <div class="form-group mb-4">
+            <label for="slider" class="fs-5 text-muted mt-3">How closely should Chef-GPT follow your ingredients?</label>
+            <div class="slider-container mx-auto d-flex justify-content-center mt-3">
+                <i class="far fa-lemon text-muted"></i>
+                <input type="range" class="form-range custom-range" id="slider" name="slider" min="1" max="3">
+                <i class="fas fa-utensils text-muted"></i>
+            </div>
+            <div id="slider-value" class="text-center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>
+          </div>
+          
+          <hr>
+          
+          <div class="form-group mb-4">
+            <label for="meal-type-select" class="fs-5 text-muted mt-4">Which meal are you looking for?</label>
+            <select class="form-select mt-2" id="meal-type-select" name="meal-type">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="side dish">Side dish</option>
+              <option value="dessert">Dessert</option>
+            </select>
+          </div>
+          
+          <hr>
+          
+          <div class="form-group mb-4">
+            <label for="note-text" class="fs-5 text-muted mt-4">Any additional notes?</label>
+            <input type="text" class="form-control mt-2" id="note-text" name="note-text" placeholder="Add your notes here (e.g. 'make it halloween themed' or 'do not use milk')" autocomplete="off">
+          </div>
+        </form>
       </div>
-      <div class="my-4 border-bottom"></div>
-
-      <div class="mb-3">
-        <p for="note-text" class="fs-5 text-muted mt-4">Any additional notes?</p>
-        <input type="text" class="form-control" id="note-text" name="note-text" placeholder="Add your note here" autocomplete="off">
-      </div>
-      <div class="my-4 border-bottom"></div>
+    </div>
+    
 
       <h2 class="text-left text-primary fw-bold mt-5">Decide What To Make</h2>
       <p for="meal-type-select" class="fs-5 text-muted mt-2">Let's ask Chef-GPT for some meal ideas.<br></label>
@@ -64,6 +98,7 @@
 
     </form>
   </div>
+  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Cs7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
   
   <script>
@@ -113,20 +148,41 @@
             .then(response => response.json())
             .then(recipe => {
 
-              const Title = recipe.Title
-              const Ingredients = recipe.Ingredients
-              const Directions = recipe.Directions
-              const Chef_Notes = recipe.ChefNotes
+              const Title = recipe.Title;
+              const Ingredients = recipe.Ingredients;
+              const Directions = recipe.Directions;
+              const Chef_Notes = recipe.ChefNotes;
 
               // create a new Bootstrap card element
               const recipeCard = document.createElement('div');
               recipeCard.classList.add('card', 'shadow', 'mb-3');
 
-              // create the card header with the recipe title
+              // create the card header with the recipe title, copy button, and delete button
               const cardHeader = document.createElement('div');
-              cardHeader.classList.add('card-header');
-              cardHeader.textContent = Title;
+              cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
+              cardHeader.innerHTML = `
+                <h4 class="mb-0">${Title}</h4>
+                <div>
+                  <button class="btn btn-secondary btn-sm me-2" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to copy recipe to clipboard">
+                    <i class="bi bi-clipboard"></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to delete recipe card">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>`;
+              const copyButton = cardHeader.querySelector('button[data-bs-toggle="tooltip"]');
+              copyButton.addEventListener('click', () => {
+                const textToCopy = `${Title}\n\nIngredients:\n${Ingredients.join('\n')}\n\nDirections:\n${Directions.join('\n')}\n\nChef Notes:\n${Chef_Notes}`;
+                navigator.clipboard.writeText(textToCopy);
+                copyButton.setAttribute('data-bs-original-title', 'Recipe copied to clipboard!');
+                const tooltip = new bootstrap.Tooltip(copyButton);
+              });
+              const deleteButton = cardHeader.querySelector('button.btn-danger');
+              deleteButton.addEventListener('click', () => {
+                recipeCard.remove();
+              });
               recipeCard.appendChild(cardHeader);
+
 
               // create the card body with the recipe ingredients and directions
               const cardBody = document.createElement('div');
@@ -141,7 +197,10 @@
               // add the ingredient list
               const ingredientList = document.createElement('ul');
               ingredientList.classList.add('list-group', 'list-group-flush');
-              Ingredients.forEach(ingredient => {
+
+              // flatten the ingredients array
+              const flattenedIngredients = Ingredients.flat();
+              flattenedIngredients.forEach(ingredient => {
                 const listItem = document.createElement('li');
                 listItem.classList.add('list-group-item');
                 listItem.textContent = ingredient;
@@ -155,15 +214,18 @@
               directionsHeader.textContent = 'Directions:';
               cardBody.appendChild(directionsHeader);
 
-              const directionsList = document.createElement('ol');
-              Directions.forEach(direction => {
+              const directionsList = document.createElement('ul');
+
+              // flatten the directions array
+              const flattenedDirections = Directions.flat();
+              flattenedDirections.forEach(direction => {
                 const listItem = document.createElement('li');
                 listItem.textContent = direction;
                 directionsList.appendChild(listItem);
               });
               cardBody.appendChild(directionsList);
 
-              //chef's notes header
+              // chef's notes header
               const notesHeader = document.createElement('h5');
               notesHeader.classList.add('card-title', 'mt-3');
               notesHeader.textContent = 'Chef Notes:';
@@ -171,12 +233,12 @@
 
               const notesBody = document.createElement('div');
               notesBody.classList.add('card-body');
-              notesBody.textContent = Chef_Notes;
+              notesBody.innerHTML = Chef_Notes;
               cardBody.appendChild(notesBody);
-              
+
               recipeCard.appendChild(cardBody);
 
-              // Create a new div element
+              // create a new div element
               const recipeContainer = document.createElement("div");
               recipeContainer.id = "recipe-container";
               recipeContainer.style.maxWidth = "800px";
