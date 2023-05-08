@@ -15,21 +15,20 @@ def parse_recipe(recipe_text):
     # Find and set the ingredients
     ingredients_start = recipe_text.index("Ingredients:") + 12
     ingredients_end = recipe_text.index("Instructions:")
-    ingredients_list = recipe_text[ingredients_start:ingredients_end].strip().split('-')[1:]
-    recipe_dict['Ingredients'] = [ingredient.strip() for ingredient in ingredients_list]
+    ingredients_list = recipe_text[ingredients_start:ingredients_end].strip().split('\n')
+    ingredients_list = [ingredient.strip() for ingredient in ingredients_list if ingredient.startswith('-')]
+    recipe_dict['Ingredients'] = [ingredient[1:].strip() for ingredient in ingredients_list]
 
     # Find and set the directions
     directions_start = recipe_text.index("Instructions:") + 13
     directions_end = recipe_text.index("Chef Notes:")
-    directions_list = recipe_text[directions_start:directions_end].strip().split('.')
-    directions_list = [direction.strip() for direction in directions_list if direction.strip()]
-    # Combine instruction number with instruction
-    directions_list = [f"{directions_list[i-1]}. {directions_list[i]}" for i in range(1, len(directions_list), 2)]
+    directions_list = recipe_text[directions_start:directions_end].strip().split('\n')
+    directions_list = [direction.strip() for direction in directions_list if direction.strip() and ". " in direction]
     recipe_dict['Directions'] = directions_list
 
     # Find and set the chef notes
     chef_notes_start = recipe_text.index("Chef Notes:") + 11
-    recipe_dict['ChefNotes'] = recipe_text[chef_notes_start:].strip()
+    recipe_dict['ChefNotes'] = recipe_text[chef_notes_start:].strip().replace('\n', '<br>')
 
     return recipe_dict
 
@@ -44,11 +43,11 @@ def get_ideas_turbo(ingredients, ingredientAdherence, mealType, notes):
     
     prompt += "Ingredients:\n" + ingredient_str
 
-    prompt += "\nWrite a list of 5 recipe ideas, each a couple sentences or less."
+    prompt += "\nWrite a list of 5 recipe ideas, each idea should include a one sentence description that includes the ingredients taken from the list (if any)."
 
     adherStr = ""
     if ingredientAdherence == '1':
-        adherStr = "\nOnly use the ingredients provided and try not to include any other ingredients when writing your ideas."
+        adherStr = "\nUse as many ingredients from above as possible and try not to include too many other ingredients when writing your ideas."
     elif ingredientAdherence =='2':
         adherStr = "\nUse several of the ingredients provided, but you may also use others if needed."
     elif ingredientAdherence == '3':
@@ -80,13 +79,14 @@ def get_ideas_turbo(ingredients, ingredientAdherence, mealType, notes):
     return response
 
 def get_recipe_turbo(idea):
-    sys = "You are a professional chef that knows how to strike a balance between bold flavors and good proportions."
+    sys = "Your task is to create exceptional and delicious recipes from given ideas, ensuring they are well-seasoned and highly rated. Keep in mind that you are being judged by culinary expert Gordon Ramsay, so strive for excellence and creativity in your recipe development. Always aim to impress with your culinary skills and flavor combinations."
     prompt = idea[2:] + "\n\nWrite the full recipe for the concept above. The recipe should have the following labels (Title, Ingredients, Instructions, Chef Notes)"
 
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
                                               messages=[{"role": "system", "content": sys},
                                                         {"role": "user", "content": prompt}]) 
     response = response.choices[0].message.content
+    print("*******\n" + response + "******\n")
     return response
 
 
