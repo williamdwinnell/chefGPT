@@ -32,3 +32,68 @@ body {
     padding: 0.375rem 0.75rem;
     margin-top: 0.5rem;
 }
+.ingredient-scrollable {
+    max-height: 400px; /* adjust the height as needed */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+}
+.custom-range {
+    width: 80%;
+}
+
+hr {
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.form-group {
+    position: relative;
+}
+
+.form-group .fas,
+.form-group .far {
+    position: absolute;
+    top: 50%;
+    transform: translateY(50%);
+}
+
+.form-group .far {
+    left: 0;
+}
+
+.form-group .fas {
+    right: 0;
+}.slider-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+  
+/* Define the chef hat icon */
+.icon-chef:before {
+  content: "\f7d9"; /* Font Awesome chef hat icon */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 2.5rem;
+  color: #333;
+  margin-right: 10px;
+}
+
+/* Define the AI icon */
+.icon-ai:before {
+  content: "\f597"; /* Font Awesome robot icon */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 2.5rem;
+  color: #333;
+  margin-right: 10px;
+}
+
+/* Style the title */
+.title {
+  font-size: 2rem;
+  margin-top: 50px;
+  display: flex;
+  align-items: center;
+}
