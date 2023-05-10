@@ -16,11 +16,11 @@
   <div class="container">
     <div class="jumbotron text-center" style="background-color: #f8f9fa;">
       
-      <img src="/static/titleicon.png" alt="Image Description"  width="12.5%" height="12.5%" style="padding-top: 25px;">
+      <img src="/static/titleicon.png" alt="Image Description"  width="15.5%" height="15.5%" style="padding-top: 25px;">
       <h1 class="display-3" style="font-size: 2.5rem; padding-top: 5px;">Get Cooking with Chef-GPT</h1>
 
       <hr class="my-4">
-      <p class="lead">Your Personal Sous-Chef for Creative Culinary Adventures</p>
+      <p class="lead">Your Personal Sous-Chef for Creative Culinary Adventures</p><br>
     </div>
     
 
@@ -48,7 +48,7 @@
   </div>
 
     <div class="border p-3 mt-5">
-      <div class="container mt-5">
+      <div class="container mt-2">
         <h2 class="text-left text-primary fw-bold">Settings</h2>
         <form>
           <div class="form-group mb-4">
@@ -87,7 +87,17 @@
 
       <h2 class="text-left text-primary fw-bold mt-5">Decide What To Make</h2>
       <p for="meal-type-select" class="fs-5 text-muted mt-2">Let's ask Chef-GPT for some meal ideas.<br></label>
-      <button id="meal-ideas-btn" type="submit" class="btn btn-primary mb-3 mt-3">Generate Meal Ideas</button>
+      
+        <div style="display: flex; align-items: center;">
+        <button id="meal-ideas-btn" type="submit" class="btn btn-primary mb-3 mt-3">Generate Meal Ideas</button>
+      
+        <div id="loader" class="d-none" style="margin-left: 10px;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </div>
+        
 
       <div id="meal-ideas-container">
         <ul id="meal-ideas-list"></ul>
@@ -107,12 +117,15 @@
     const notes = document.getElementById('note-text').value;
 
     const mealIdeasBtn = document.getElementById('meal-ideas-btn');
+    const loader = document.getElementById("loader");
 
-    mealIdeasBtn.addEventListener('click', function() {
+    mealIdeasBtn.addEventListener('click', async function() {
+      loader.classList.remove("d-none");
+      
       const mealBtnPos = document.getElementById("meal-ideas-btn").getBoundingClientRect().top + window.pageYOffset;
       const scrollPosition = mealBtnPos - 250;
       
-      fetch('/', {
+      const response = await fetch('/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -271,6 +284,7 @@
           document.body.appendChild(buttonContainer);
         }
       });
+      loader.classList.add("d-none");
     });
 
   </script>

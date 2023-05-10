@@ -78,21 +78,41 @@ def get_ideas_turbo(ingredients, ingredientAdherence, mealType, notes):
     #print(response)
     return response
 
-def get_recipe_turbo(idea):
+def get_recipe_turbo(idea, ingredients):
+
+    ingredient_str = ""
+
+    for ingredient in ingredients:
+        ingredient_str += "- " + ingredient + "\n"
+
     sys = "Your task is to create exceptional and delicious recipes from given ideas, ensuring they are well-seasoned and highly rated. Keep in mind that you are being judged by culinary expert Gordon Ramsay, so strive for excellence and creativity in your recipe development. Always aim to impress with your culinary skills and flavor combinations."
-    prompt = idea[2:] + "\n\nWrite the full recipe for the concept above. The recipe should have the following labels (Title, Ingredients, Instructions, Chef Notes)"
+    
+    prompt_primer_user = "Ingredients:\n" + ingredient_str + "\nWrite a recipe idea using these ingredients for inspiration."
+    prompt_primer_assistant = idea[2:]
+    prompt = "Write the full recipe for your idea, and use any ingredients necessary to make it great. The recipe should have the following labels (Title, Ingredients, Instructions, Chef Notes), please use the exact labels shown here."
 
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
                                               messages=[{"role": "system", "content": sys},
+                                                        {"role": "user", "content": prompt_primer_user},
+                                                        {"role": "assistant", "content": prompt_primer_assistant},
                                                         {"role": "user", "content": prompt}]) 
     response = response.choices[0].message.content
     print("*******\n" + response + "******\n")
     return response
 
+ingredients = []
 
 app = Flask(__name__)
 
-ingredients = []
+@app.before_request
+def do_something():
+    global ingredients
+    cache_control = request.headers.get("Cache-Control", "")
+    if "max-age=0" in cache_control:
+        print(ingredients)
+        ingredients = []
+        print(ingredients)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -129,7 +149,7 @@ def get_recipe():
     if request.method == 'POST':
         data = request.get_json()  # Get the data as JSON
         print(data)
-        recipe = get_recipe_turbo(data['idea'])
+        recipe = get_recipe_turbo(data['idea'], ingredients)
         parsed_recipe = parse_recipe(recipe)
         print(parsed_recipe)
     return jsonify(parsed_recipe)
