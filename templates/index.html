@@ -8,6 +8,8 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js" integrity="sha512-eNlPludnB+6bFlJjBlgNR2IW/uv+Vn/gL+Jh7VxLxZibkr7WETxdvQoEAMkLTLjXnyz1cY4i2/lwQRbAkj1GpA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
   <title>Chef-GPT</title>
@@ -105,6 +107,59 @@
 
       <div id="recipe-container"></div>
 
+      <style>
+        .carousel-control-prev:hover, .carousel-control-next:hover {
+          background-color: blue !important;
+          opacity: 0.1;
+        }
+        .carousel-control-prev, .carousel-control-next {
+          background-color: blue;
+          opacity: 0;
+          border: none;
+          color: white;
+          font-size: 2rem;
+        }
+        .carousel-button-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: absolute;
+          top: 0;
+          height: 100%;
+          width: 25%;
+        }
+        .carousel-control-prev-wrapper {
+          left: -2.5%;
+        }
+        .carousel-control-next-wrapper {
+          right: -2.5%;
+        }.carousel-control-prev:focus,
+        .carousel-control-next:focus,
+        .carousel-control-prev:active,
+        .carousel-control-next:active {
+          background-color: blue !important;
+          opacity: .08;
+          outline: none;
+        }
+      </style>
+      
+      <div id="recipe-carousel" class="carousel slide mt-3" data-bs-interval="false">
+        <div class="carousel-inner"></div>
+        <div class="carousel-button-wrapper carousel-control-prev-wrapper">
+          <button class="carousel-control-prev" type="button" data-bs-target="#recipe-carousel" data-bs-slide="prev">
+            <span class="fas fa-chevron-left"></span>
+          </button>
+        </div>
+        <div class="carousel-button-wrapper carousel-control-next-wrapper">
+          <button class="carousel-control-next" type="button" data-bs-target="#recipe-carousel" data-bs-slide="next">
+            <span class="fas fa-chevron-right"></span>
+          </button>
+        </div>
+      </div>
+      
+      
+      
+
 
     </form>
   </div>
@@ -176,6 +231,16 @@
               cardHeader.innerHTML = `
                 <h4 class="mb-0">${Title}</h4>
                 <div>
+                  <style>
+                      .btn-secondary {
+                          position: relative;
+                          z-index: 100;
+                      }
+                      .btn-danger {
+                          position: relative;
+                          z-index: 100;
+                      }
+                  </style>
                   <button class="btn btn-secondary btn-sm me-2" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to copy recipe to clipboard">
                     <i class="bi bi-clipboard"></i>
                   </button>
@@ -183,6 +248,27 @@
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>`;
+
+              const carouselInner = document.querySelector(".carousel-inner");
+              
+
+              // Get the copy and delete buttons from the card header
+              const copyButton = cardHeader.querySelector('button[data-bs-toggle="tooltip"]');
+              const deleteButton = cardHeader.querySelector('button.btn-danger');
+
+              // Add event listeners to the copy and delete buttons
+              copyButton.addEventListener('click', (event) => {
+                const textToCopy = `${Title}\n\nIngredients:\n${Ingredients.join('\n')}\n\nDirections:\n${Directions.join('\n')}\n\nChef Notes:\n${Chef_Notes}`;
+                navigator.clipboard.writeText(textToCopy);
+                copyButton.setAttribute('data-bs-original-title', 'Recipe copied to clipboard!');
+                const tooltip = new bootstrap.Tooltip(copyButton);
+              });
+
+              deleteButton.addEventListener('click', (event) => {
+                recipeCard.remove();
+              });
+
+              /*
               const copyButton = cardHeader.querySelector('button[data-bs-toggle="tooltip"]');
               copyButton.addEventListener('click', () => {
                 const textToCopy = `${Title}\n\nIngredients:\n${Ingredients.join('\n')}\n\nDirections:\n${Directions.join('\n')}\n\nChef Notes:\n${Chef_Notes}`;
@@ -193,9 +279,10 @@
               const deleteButton = cardHeader.querySelector('button.btn-danger');
               deleteButton.addEventListener('click', () => {
                 recipeCard.remove();
-              });
+              });*/
               recipeCard.appendChild(cardHeader);
 
+              
 
               // create the card body with the recipe ingredients and directions
               const cardBody = document.createElement('div');
@@ -251,15 +338,29 @@
 
               recipeCard.appendChild(cardBody);
 
-              // create a new div element
               const recipeContainer = document.createElement("div");
+              recipeContainer.classList.add("carousel-item");
+              recipeContainer.appendChild(recipeCard);
+
+              if (carouselInner.children.length === 0) {
+                recipeContainer.classList.add("active");
+              }
+              carouselInner.appendChild(recipeContainer);
+
+              // Trigger a click event on the next button to display the new item
+              const nextButton = document.querySelector(".carousel-control-next");
+              nextButton.click();
+
+
+              // create a new div element
+              /*const recipeContainer = document.createElement("div");
               recipeContainer.id = "recipe-container";
               recipeContainer.style.maxWidth = "800px";
               recipeContainer.style.margin = "auto";
               recipeContainer.style.display = "block";
               recipeContainer.style.marginTop = "30px";
               recipeContainer.appendChild(recipeCard);
-              document.body.appendChild(recipeContainer);
+              document.body.appendChild(recipeContainer);*/
             });
           });
           buttonContainer.appendChild(button);
