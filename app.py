@@ -1,5 +1,17 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, redirect, url_for, request, jsonify
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user
+
 import openai
+import json
+
+### Look into making the prompts + outputs higher quality + shorter at the same time
+### 250 tokens for ideas
+### 450 tokens for recipes
+### fix delete button so that it removes the recipes from the user's db
+### check for any old code regarding add/remove ingredients, there might be some left over in index.html
 
 #activate api_key
 openai.api_key = "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"
@@ -91,6 +103,11 @@ def get_recipe_turbo(idea, ingredients):
     prompt_primer_assistant = idea[2:]
     prompt = "Write the full recipe for your idea, and use any ingredients necessary to make it great. The recipe should have the following labels (Title, Ingredients, Instructions, Chef Notes), please use the exact labels shown here."
 
+    print("System: ", sys)
+    print("User: ", prompt_primer_user)
+    print("Assistant: ", prompt_primer_assistant)
+    print("User: ", prompt)
+
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
                                               messages=[{"role": "system", "content": sys},
                                                         {"role": "user", "content": prompt_primer_user},
@@ -100,59 +117,161 @@ def get_recipe_turbo(idea, ingredients):
     print("*******\n" + response + "******\n")
     return response
 
-ingredients = []
-
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Set a secret key for session security
 
-@app.before_request
-def do_something():
-    global ingredients
-    cache_control = request.headers.get("Cache-Control", "")
-    if "max-age=0" in cache_control:
-        print(ingredients)
-        ingredients = []
-        print(ingredients)
+# Configure Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+# Configure SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+db = SQLAlchemy(app)
+
+
+# User model
+class User(UserMixin, db.Model):
+    id = db.Column(db.String(50), primary_key=True)
+    password_hash = db.Column(db.String(128))
+    recipes = db.Column(db.Text)
+
+    def __init__(self, id, password):
+        self.id = id
+        self.password_hash = generate_password_hash(password)
+        self.recipes = '[]'
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_recipes(self):
+        return eval(self.recipes)
+
+    def add_recipe(self, title, ingredients, directions, chef_notes):
+        
+        recipe = {
+            'title': title,
+            'ingredients': ingredients,
+            'directions': directions,
+            'chef_notes': chef_notes
+        }
+        recipes = self.get_recipes()
+        recipes.append(recipe)
+        self.recipes = str(recipes)
+
+        print("Recipe*********\n\n", self.recipes, "\n\nRecipe*********")
+
+    def clear_recipes(self):
+        self.recipes = '[]'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
 
 @app.route('/', methods=['GET', 'POST'])
-def home():
+@login_required
+def index():
+    user = User.query.get(current_user.id)
+    recipes = user.get_recipes()
+
     if request.method == 'POST':
         data = request.get_json()  # Get the data as JSON
         print(data)
         if 'getIdeas' in data and data['getIdeas'] == 'True':
+            ingredients = data['ingredients']  # Retrieve the ingredients from the JSON data
             meal_ideas = get_ideas_turbo(ingredients, data['ingredientAdherence'], data['mealType'], data['notes']).split("\n")
-            for meal in meal_ideas:
-                if len(meal) < 3:
-                    meal_ideas.remove(meal)
-            
+            meal_ideas = [meal for meal in meal_ideas if len(meal) >= 3]
             print(meal_ideas)
             return jsonify({'meal_ideas': meal_ideas})
+
+    return render_template('index.html', recipes=recipes)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.get(username)
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('index'))
         else:
-            ingredient = data['textbox'].strip()
-            if data['remove'] == "False":
-                if ingredient:
-                    ingredients.append(ingredient)
-                    print(ingredients)
-                    return jsonify({'success': True})
-                else:
-                    return jsonify({'success': False}) 
-            else:
-                ingredients.remove(ingredient)
-                print(ingredients)
-                return jsonify({'success': True})
-        
-    else:
-        return render_template('index.html', ingredients=ingredients)
+            return render_template('login.html', error='Invalid username or password')
+    return render_template('login.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if User.query.get(username):
+            return render_template('register.html', error='Username already exists')
+        user = User(username, password)
+        db.session.add(user)
+        db.session.commit()
+        login_user(user)
+        return redirect(url_for('index'))
+    return render_template('register.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/add_recipe', methods=['POST'])
+@login_required
+def add_recipe():
+    recipe_data = request.get_json()  # Get the recipe data from the request's JSON payload
+
+    # Extract the recipe details from the recipe data
+    title = recipe_data.get('title')
+    ingredients = recipe_data.get('ingredients')
+    directions = recipe_data.get('directions')
+    chef_notes = recipe_data.get('chefNotes')
+
+    user = User.query.get(current_user.id)
+    user.add_recipe(title, ingredients, directions, chef_notes)
+    db.session.commit()
+    return jsonify({'message': 'Recipe added successfully'})  # Respond with a success message
 
 @app.route('/recipe', methods=['POST'])
+@login_required
 def get_recipe():
     if request.method == 'POST':
         data = request.get_json()  # Get the data as JSON
         print(data)
-        recipe = get_recipe_turbo(data['idea'], ingredients)
+        recipe = get_recipe_turbo(data['idea'], data['ingredients'])
         parsed_recipe = parse_recipe(recipe)
         print(parsed_recipe)
     return jsonify(parsed_recipe)
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
+
+@app.route('/delete_recipe/<int:recipe_id>', methods=['DELETE'])
+@login_required
+def delete_recipe(recipe_id):
+    user = User.query.get(current_user.id)
+    recipes = user.get_recipes()
+
+    print("running")
+
+    # Find the recipe with the given recipe_id
+    recipe_index = recipe_id - 1  # Adjust index since recipe_id starts from 1
+    if 0 <= recipe_index < len(recipes):
+        del recipes[recipe_index]  # Delete the recipe from the list
+        user.recipes = json.dumps(recipes)  # Update the user's recipes
+
+        db.session.commit()
+        return jsonify({'message': 'Recipe deleted successfully'}), 200  # Respond with a success message
+    else:
+        return jsonify({'error': 'Recipe not found'}), 404  # Respond with an error if recipe not found
+

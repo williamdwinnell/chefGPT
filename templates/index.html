@@ -1,437 +1,528 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/C63F/aa7PRFdUY/*/L8z5X5t9SK5Ux/*/5U+6D/*" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js" integrity="sha512-eNlPludnB+6bFlJjBlgNR2IW/uv+Vn/gL+Jh7VxLxZibkr7WETxdvQoEAMkLTLjXnyz1cY4i2/lwQRbAkj1GpA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/C63F/aa7PRFdUY/*/L8z5X5t9SK5Ux/*/5U+6D/*" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js" integrity="sha512-eNlPludnB+6bFlJjBlgNR2IW/uv+Vn/gL+Jh7VxLxZibkr7WETxdvQoEAMkLTLjXnyz1cY4i2/lwQRbAkj1GpA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
-  <title>Chef-GPT</title>
+    <title>Chef-GPT</title>
 </head>
 <body>
-  <div class="container">
-    <div class="jumbotron text-center" style="background-color: #f8f9fa;">
-      
-      <img src="/static/titleicon.png" alt="Image Description"  width="15.5%" height="15.5%" style="padding-top: 25px;">
-      <h1 class="display-3" style="font-size: 2.5rem; padding-top: 5px;">Get Cooking with Chef-GPT</h1>
-
-      <hr class="my-4">
-      <p class="lead">Your Personal Sous-Chef for Creative Culinary Adventures</p><br>
-    </div>
-    
-
-    <div class="border p-3 mt-5">
-    <h2 class="text-left text-primary fw-bold">Ingredients</h2>
-    <form id="ingredient-form">
-      <div class="mb-3">
-        <label for="textbox" class="form-label fs-5 text-muted">List possible cooking ingredients for the recipe to include.</label>
-        <div class="input-group">
-          <input type="text" class="form-control" id="textbox" name="textbox" autocomplete="off" placeholder="Enter an ingredient...">
-          <button type="submit" class="btn btn-primary">Add</button>
+    <div class="container">
+        <div class="jumbotron text-center header-light" style="background-color: #f8f9fa;">
+            <button class="btn btn-sm btn-light mode-toggle" onclick="toggleMode()" style="position: fixed; top: 20px; right: 20px;">Light Mode</button>
+            <a href="{{ url_for('logout') }}" style="position: fixed; top: 20px; left: 20px;">Logout</a>
+            <img src="/static/titleicon.png" alt="Image Description" width="18.5%" height="18.5%" style="padding-top: 25px;">
+            <h1 style="font-size: 2.5rem; padding-top: 20px;">Welcome, {{ current_user.id }}</h1>
+            <h1 class="display-3" style="font-size: 2.5rem; padding-top: 5px;">Get Cooking with Chef-GPT</h1>
+            <hr class="my-4">
+            <p class="lead">Your Personal Sous-Chef for Creative Culinary Adventures</p>
         </div>
-      </div>
-    </form>
 
-    <div class="my-4 border-bottom"></div>
+        <div class="border p-3 mt-5">
+            <h2 class="text-left text-primary fw-bold">Ingredients</h2>
+            <form id="ingredient-form">
+                <div class="mb-3">
+                <label for="textbox" class="form-label fs-5 text-muted mt-3">List possible cooking ingredients for the recipe to include.</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="textbox" name="textbox" autocomplete="off" placeholder="Enter an ingredient...">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+            </form>
 
-    <div class="ingredient-scrollable">
-      <ul id="ingredient-list" class="list-group">
-        {% for ingredient in ingredients %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient }}<button class="btn btn-danger delete-button"><i class="bi bi-x"></i></button></li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+            <div class="my-4 border-bottom"></div>
 
-    <div class="border p-3 mt-5">
-      <div class="container mt-2">
-        <h2 class="text-left text-primary fw-bold">Settings</h2>
-        <form>
-          <div class="form-group mb-4">
-            <label for="slider" class="fs-5 text-muted mt-3">How closely should Chef-GPT follow your ingredients?</label>
-            <div class="slider-container mx-auto d-flex justify-content-center mt-3">
-                <i class="far fa-lemon text-muted"></i>
-                <input type="range" class="form-range custom-range" id="slider" name="slider" min="1" max="3">
-                <i class="fas fa-utensils text-muted"></i>
+            <div class="ingredient-scrollable">
+                <ul id="ingredient-list" class="list-group">
+                {% for ingredient in ingredients %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">{{ ingredient }}<button class="btn btn-danger delete-button"><i class="bi bi-x"></i></button></li>
+                {% endfor %}
+                </ul>
             </div>
-            <div id="slider-value" class="text-center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>
-          </div>
-          
-          <hr>
-          
-          <div class="form-group mb-4">
-            <label for="meal-type-select" class="fs-5 text-muted mt-4">Which meal are you looking for?</label>
-            <select class="form-select mt-2" id="meal-type-select" name="meal-type">
-              <option value="breakfast">Breakfast</option>
-              <option value="lunch">Lunch</option>
-              <option value="dinner">Dinner</option>
-              <option value="side dish">Side dish</option>
-              <option value="dessert">Dessert</option>
-            </select>
-          </div>
-          
-          <hr>
-          
-          <div class="form-group mb-4">
-            <label for="note-text" class="fs-5 text-muted mt-4">Any additional notes?</label>
-            <input type="text" class="form-control mt-2" id="note-text" name="note-text" placeholder="Add your notes here (e.g. 'make it halloween themed' or 'do not use milk')" autocomplete="off">
-          </div>
-        </form>
-      </div>
-    </div>
-    
+        </div>
 
-      <h2 class="text-left text-primary fw-bold mt-5">Decide What To Make</h2>
-      <p for="meal-type-select" class="fs-5 text-muted mt-2">Let's ask Chef-GPT for some meal ideas.<br></label>
-      
-        <div style="display: flex; align-items: center;">
-        <button id="meal-ideas-btn" type="submit" class="btn btn-primary mb-3 mt-3">Generate Meal Ideas</button>
-      
-        <div id="loader" class="d-none" style="margin-left: 10px;">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-          </div>
+
+        <div class="border p-3 mt-5">
+            <div class="container mt-2">
+            <h2 class="text-left text-primary fw-bold">Settings</h2>
+            <form>
+                <div class="form-group mb-4">
+                <label for="slider" class="fs-5 text-muted mt-3">How closely should Chef-GPT follow your ingredients?</label>
+                <div class="slider-container mx-auto d-flex justify-content-center mt-3">
+                    <i class="far fa-lemon text-muted"></i>
+                    <input type="range" class="form-range custom-range" id="slider" name="slider" min="1" max="3">
+                    <i class="fas fa-utensils text-muted"></i>
+                </div>
+                <div id="slider-value" class="text-center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>
+                </div>
+                
+                <hr>
+                
+                <div class="form-group mb-4">
+                <label for="meal-type-select" class="fs-5 text-muted mt-4">Which meal are you looking for?</label>
+                <select class="form-select mt-2" id="meal-type-select" name="meal-type">
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="side dish">Side dish</option>
+                    <option value="dessert">Dessert</option>
+                </select>
+                </div>
+                
+                <hr>
+                
+                <div class="form-group mb-4">
+                <label for="note-text" class="fs-5 text-muted mt-4">Any additional notes?</label>
+                <input type="text" class="form-control mt-2" id="note-text" name="note-text" placeholder="Add your notes here (e.g. 'make it halloween themed' or 'do not use milk')" autocomplete="off">
+                </div>
+            </form>
+            </div>
+        </div>
+        
+    
+            <h2 class="text-left text-primary fw-bold mt-5">Decide What To Make</h2>
+            <p for="meal-type-select" class="fs-5 text-muted mt-2">Let's ask Chef-GPT for some meal ideas.<br></label>
+            
+            <div style="display: flex; align-items: center;">
+            <button id="meal-ideas-btn" type="submit" class="btn btn-primary mb-3 mt-3">Generate Meal Ideas</button>
+            
+            <div id="loader" class="d-none" style="margin-left: 10px;">
+                <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            </div>
+            
+    
+            <div id="meal-ideas-container">
+            <ul id="meal-ideas-list"></ul>
+            </div>
+    
+            <div id="recipe-container"></div>
+    
+            <style>
+            .carousel-control-prev:hover, .carousel-control-next:hover {
+                background-color: blue !important;
+                opacity: 0.1;
+            }
+            .carousel-control-prev, .carousel-control-next {
+                background-color: blue;
+                opacity: 0;
+                border: none;
+                color: white;
+                font-size: 2rem;
+            }
+            .carousel-button-wrapper {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 0;
+                height: 100%;
+                width: 25%;
+            }
+            .carousel-control-prev-wrapper {
+                left: -2.5%;
+            }
+            .carousel-control-next-wrapper {
+                right: -2.5%;
+            }.carousel-control-prev:focus,
+            .carousel-control-next:focus,
+            .carousel-control-prev:active,
+            .carousel-control-next:active {
+                background-color: blue !important;
+                opacity: .08;
+                outline: none;
+            }
+            </style>
+            
+            <div id="recipe-carousel" class="carousel slide mt-3" data-bs-interval="false">
+            <div class="carousel-inner"></div>
+            <div class="carousel-button-wrapper carousel-control-prev-wrapper">
+                <button class="carousel-control-prev" type="button" data-bs-target="#recipe-carousel" data-bs-slide="prev">
+                <span class="fas fa-chevron-left"></span>
+                </button>
+            </div>
+            <div class="carousel-button-wrapper carousel-control-next-wrapper">
+                <button class="carousel-control-next" type="button" data-bs-target="#recipe-carousel" data-bs-slide="next">
+                <span class="fas fa-chevron-right"></span>
+                </button>
+            </div>
+            </div>
+            
+        </form>
+
+
+        {% if recipes %}
+            <div class="recipe-section">
+                <h2 class="text-left text-primary fw-bold mt-5">Recipe Archive</h2>
+                <ul class="list-group recipe-list">
+                    {% for recipe in recipes %}
+                        <li class="list-group-item">
+                            <button class="btn btn-link recipe-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#recipe-{{ loop.index }}">
+                                {{ recipe.title }}
+                            </button>
+                            <button class="btn btn-danger btn-sm float-end delete-recipe" type="button" data-recipe-id="{{ loop.index }}">Delete</button>
+                            <div id="recipe-{{ loop.index }}" class="collapse">
+                                <h4>Ingredients:</h4>
+                                <ul class="list-group">
+                                    {% for ingredient in recipe.ingredients %}
+                                        <li class="list-group-item">{{ ingredient }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <h4>Directions:</h4>
+                                <ol>
+                                    {% for direction in recipe.directions %}
+                                        <li>{{ direction }}</li>
+                                    {% endfor %}
+                                </ol>
+                                <h4>Chef Notes:</h4>
+                                <p>{{ recipe.chef_notes }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <p>No recipes added yet.</p>
+        {% endif %}
+
+
+        <div class="my-4 border-bottom mt-5"></div>
+        <div class="footer">
+            <p>About Us</p>
+            <p class="warning"><i class="fas fa-exclamation-triangle"></i> Warning: Extensive work has gone into making Chef-GPT reliable, but it is still prone to hallucinations and writing unsafe recipes. Please use common sense in the kitchen!</p>
         </div>
       </div>
         
-
-      <div id="meal-ideas-container">
-        <ul id="meal-ideas-list"></ul>
-      </div>
-
-      <div id="recipe-container"></div>
-
-      <style>
-        .carousel-control-prev:hover, .carousel-control-next:hover {
-          background-color: blue !important;
-          opacity: 0.1;
-        }
-        .carousel-control-prev, .carousel-control-next {
-          background-color: blue;
-          opacity: 0;
-          border: none;
-          color: white;
-          font-size: 2rem;
-        }
-        .carousel-button-wrapper {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: absolute;
-          top: 0;
-          height: 100%;
-          width: 25%;
-        }
-        .carousel-control-prev-wrapper {
-          left: -2.5%;
-        }
-        .carousel-control-next-wrapper {
-          right: -2.5%;
-        }.carousel-control-prev:focus,
-        .carousel-control-next:focus,
-        .carousel-control-prev:active,
-        .carousel-control-next:active {
-          background-color: blue !important;
-          opacity: .08;
-          outline: none;
-        }
-      </style>
-      
-      <div id="recipe-carousel" class="carousel slide mt-3" data-bs-interval="false">
-        <div class="carousel-inner"></div>
-        <div class="carousel-button-wrapper carousel-control-prev-wrapper">
-          <button class="carousel-control-prev" type="button" data-bs-target="#recipe-carousel" data-bs-slide="prev">
-            <span class="fas fa-chevron-left"></span>
-          </button>
-        </div>
-        <div class="carousel-button-wrapper carousel-control-next-wrapper">
-          <button class="carousel-control-next" type="button" data-bs-target="#recipe-carousel" data-bs-slide="next">
-            <span class="fas fa-chevron-right"></span>
-          </button>
-        </div>
-      </div>
-      
-      
-      
-
-
-    </form>
-  </div>
+    <script>
+        const deleteButtons = document.querySelectorAll('.delete-recipe');
+    
+        deleteButtons.forEach((button) => {
+            button.addEventListener('click', (event) => {
+                const recipeId = event.target.dataset.id;
+                // Send an HTTP request to delete the recipe using the recipeId
+                fetch(`/delete_recipe/${recipeId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the response from the server, if needed
+                    // You can perform any necessary actions
+                })
+                .catch(error => {
+                    // Handle any errors that occurred during the request
+                });
+                // Remove the deleted recipe from the UI
+                const recipeItem = event.target.closest('.list-group-item');
+                recipeItem.remove();
+            });
+        });
+    </script>
   
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Cs7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Cs7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
   
-  <script>
-    const ingredientAdherence = document.getElementById('slider').value;
-    const mealType = document.getElementById('meal-type-select').value;
-    const notes = document.getElementById('note-text').value;
-
-    const mealIdeasBtn = document.getElementById('meal-ideas-btn');
-    const loader = document.getElementById("loader");
-
-    mealIdeasBtn.addEventListener('click', async function() {
-      loader.classList.remove("d-none");
-      
-      const mealBtnPos = document.getElementById("meal-ideas-btn").getBoundingClientRect().top + window.pageYOffset;
-      const scrollPosition = mealBtnPos - 250;
-      
-      const response = await fetch('/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              'getIdeas': "True",
-              'ingredientAdherence': document.getElementById('slider').value,
-              'mealType': document.getElementById('meal-type-select').value,
-              'notes': document.getElementById('note-text').value
-            })
-      }).then(response => response.json())
-      .then(data => {
-        const mealIdeas = data.meal_ideas;
-        const buttonContainer = document.createElement('div');
-        buttonContainer.classList.add('btn-group-vertical', 'd-flex', 'justify-content-center', 'mx-auto');
-        buttonContainer.style.maxWidth = '600px';
-        mealIdeas.forEach((idea) => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.classList.add('btn', 'btn-primary', 'mb-2');
-          button.textContent = idea;
-          button.addEventListener('click', function() {
-            // Send a POST request to the Flask code with the idea as a parameter
-            fetch('/recipe', {
+    <script>
+      const ingredientAdherence = document.getElementById('slider').value;
+      const mealType = document.getElementById('meal-type-select').value;
+      const notes = document.getElementById('note-text').value;
+  
+      const mealIdeasBtn = document.getElementById('meal-ideas-btn');
+      const loader = document.getElementById("loader");
+  
+      mealIdeasBtn.addEventListener('click', async function() {
+        loader.classList.remove("d-none");
+        
+        const mealBtnPos = document.getElementById("meal-ideas-btn").getBoundingClientRect().top + window.pageYOffset;
+        const scrollPosition = mealBtnPos - 250;
+        
+        const response = await fetch('/', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                'idea': idea
+                'getIdeas': "True",
+                'ingredientAdherence': document.getElementById('slider').value,
+                'mealType': document.getElementById('meal-type-select').value,
+                'notes': document.getElementById('note-text').value,
+                'ingredients': Array.from(document.querySelectorAll('#ingredient-list li')).map(li => li.textContent.trim())
               })
-            })
-            .then(response => response.json())
-            .then(recipe => {
+        }).then(response => response.json())
+        .then(data => {
+          const mealIdeas = data.meal_ideas;
+          const buttonContainer = document.createElement('div');
+          buttonContainer.classList.add('btn-group-vertical', 'd-flex', 'justify-content-center', 'mx-auto');
+          buttonContainer.style.maxWidth = '600px';
+          mealIdeas.forEach((idea) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.classList.add('btn', 'btn-primary', 'mb-2');
+            button.textContent = idea;
+            button.addEventListener('click', function() {
+              // Send a POST request to the Flask code with the idea as a parameter
+              fetch('/recipe', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  'idea': idea,
+                  'ingredients': Array.from(document.querySelectorAll('#ingredient-list li')).map(li => li.textContent.trim())
+                })
+              })
+              .then(response => response.json())
+              .then(recipe => {
+  
+                const Title = recipe.Title;
+                const Ingredients = recipe.Ingredients;
+                const Directions = recipe.Directions;
+                const Chef_Notes = recipe.ChefNotes;
+  
+                // Create an object with the recipe data
+                const recipeData = {
+                    title: Title,
+                    ingredients: Ingredients,
+                    directions: Directions,
+                    chefNotes: Chef_Notes
+                };
 
-              const Title = recipe.Title;
-              const Ingredients = recipe.Ingredients;
-              const Directions = recipe.Directions;
-              const Chef_Notes = recipe.ChefNotes;
+                // Send an HTTP POST request to the server to store the recipe
+                fetch('/add_recipe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(recipeData)
+                })
 
-              // create a new Bootstrap card element
-              const recipeCard = document.createElement('div');
-              recipeCard.classList.add('card', 'shadow', 'mb-3');
+                
+                // create a new Bootstrap card element
+                const recipeCard = document.createElement('div');
+                recipeCard.classList.add('card', 'shadow', 'mb-3');
+  
+                // create the card header with the recipe title, copy button, and delete button
+                const cardHeader = document.createElement('div');
+                cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
+                cardHeader.innerHTML = `
+                  <h4 class="mb-0">${Title}</h4>
+                  <div>
+                    <style>
+                        .btn-secondary {
+                            position: relative;
+                            z-index: 100;
+                        }
+                        .btn-danger {
+                            position: relative;
+                            z-index: 100;
+                        }
+                    </style>
+                    <button class="btn btn-secondary btn-sm me-2" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to copy recipe to clipboard">
+                      <i class="bi bi-clipboard"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to delete recipe card">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>`;
+  
+                const carouselInner = document.querySelector(".carousel-inner");
+                
+  
+                // Get the copy and delete buttons from the card header
+                const copyButton = cardHeader.querySelector('button[data-bs-toggle="tooltip"]');
+                const deleteButton = cardHeader.querySelector('button.btn-danger');
+  
+                // Add event listeners to the copy and delete buttons
+                copyButton.addEventListener('click', (event) => {
+                  const textToCopy = `${Title}\n\nIngredients:\n${Ingredients.join('\n')}\n\nDirections:\n${Directions.join('\n')}\n\nChef Notes:\n${Chef_Notes}`;
+                  navigator.clipboard.writeText(textToCopy);
+                  copyButton.setAttribute('data-bs-original-title', 'Recipe copied to clipboard!');
+                  const tooltip = new bootstrap.Tooltip(copyButton);
+                });
+  
+                deleteButton.addEventListener('click', (event) => {
+                  recipeCard.remove();
+                });
+  
+                recipeCard.appendChild(cardHeader);
+  
+                
+  
+                // create the card body with the recipe ingredients and directions
+                const cardBody = document.createElement('div');
+                cardBody.classList.add('card-body');
+  
+                // ingredient header
+                const ingredientsHeader = document.createElement('h5');
+                ingredientsHeader.classList.add('card-title', 'mt-3');
+                ingredientsHeader.textContent = 'Ingredients:';
+                cardBody.appendChild(ingredientsHeader);
+  
+                // add the ingredient list
+                const ingredientList = document.createElement('ul');
+                ingredientList.classList.add('list-group', 'list-group-flush');
+  
+                // flatten the ingredients array
+                const flattenedIngredients = Ingredients.flat();
+                flattenedIngredients.forEach(ingredient => {
+                  const listItem = document.createElement('li');
+                  listItem.classList.add('list-group-item');
+                  listItem.textContent = ingredient;
+                  ingredientList.appendChild(listItem);
+                });
+                cardBody.appendChild(ingredientList);
+  
+                // add the directions
+                const directionsHeader = document.createElement('h5');
+                directionsHeader.classList.add('card-title', 'mt-3');
+                directionsHeader.textContent = 'Directions:';
+                cardBody.appendChild(directionsHeader);
+  
+                const directionsList = document.createElement('ul');
+  
+                // flatten the directions array
+                const flattenedDirections = Directions.flat();
+                flattenedDirections.forEach(direction => {
+                  const listItem = document.createElement('li');
+                  listItem.textContent = direction;
+                  directionsList.appendChild(listItem);
+                });
+                cardBody.appendChild(directionsList);
+  
+                // chef's notes header
+                const notesHeader = document.createElement('h5');
+                notesHeader.classList.add('card-title', 'mt-3');
+                notesHeader.textContent = 'Chef Notes:';
+                cardBody.appendChild(notesHeader);
+  
+                const notesBody = document.createElement('div');
+                notesBody.classList.add('card-body');
+                notesBody.innerHTML = Chef_Notes;
+                cardBody.appendChild(notesBody);
+  
+                recipeCard.appendChild(cardBody);
+  
+                const recipeContainer = document.createElement("div");
+                recipeContainer.classList.add("carousel-item");
+                recipeContainer.appendChild(recipeCard);
+  
+                if (carouselInner.children.length === 0) {
+                  recipeContainer.classList.add("active");
+                }
+                carouselInner.appendChild(recipeContainer);
+  
+                // Trigger a click event on the next button to display the new item
+                const nextButton = document.querySelector(".carousel-control-next");
+                nextButton.click();
 
-              // create the card header with the recipe title, copy button, and delete button
-              const cardHeader = document.createElement('div');
-              cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
-              cardHeader.innerHTML = `
-                <h4 class="mb-0">${Title}</h4>
-                <div>
-                  <style>
-                      .btn-secondary {
-                          position: relative;
-                          z-index: 100;
-                      }
-                      .btn-danger {
-                          position: relative;
-                          z-index: 100;
-                      }
-                  </style>
-                  <button class="btn btn-secondary btn-sm me-2" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to copy recipe to clipboard">
-                    <i class="bi bi-clipboard"></i>
-                  </button>
-                  <button class="btn btn-danger btn-sm" type="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to delete recipe card">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>`;
-
-              const carouselInner = document.querySelector(".carousel-inner");
-              
-
-              // Get the copy and delete buttons from the card header
-              const copyButton = cardHeader.querySelector('button[data-bs-toggle="tooltip"]');
-              const deleteButton = cardHeader.querySelector('button.btn-danger');
-
-              // Add event listeners to the copy and delete buttons
-              copyButton.addEventListener('click', (event) => {
-                const textToCopy = `${Title}\n\nIngredients:\n${Ingredients.join('\n')}\n\nDirections:\n${Directions.join('\n')}\n\nChef Notes:\n${Chef_Notes}`;
-                navigator.clipboard.writeText(textToCopy);
-                copyButton.setAttribute('data-bs-original-title', 'Recipe copied to clipboard!');
-                const tooltip = new bootstrap.Tooltip(copyButton);
               });
-
-              deleteButton.addEventListener('click', (event) => {
-                recipeCard.remove();
-              });
-
-              /*
-              const copyButton = cardHeader.querySelector('button[data-bs-toggle="tooltip"]');
-              copyButton.addEventListener('click', () => {
-                const textToCopy = `${Title}\n\nIngredients:\n${Ingredients.join('\n')}\n\nDirections:\n${Directions.join('\n')}\n\nChef Notes:\n${Chef_Notes}`;
-                navigator.clipboard.writeText(textToCopy);
-                copyButton.setAttribute('data-bs-original-title', 'Recipe copied to clipboard!');
-                const tooltip = new bootstrap.Tooltip(copyButton);
-              });
-              const deleteButton = cardHeader.querySelector('button.btn-danger');
-              deleteButton.addEventListener('click', () => {
-                recipeCard.remove();
-              });*/
-              recipeCard.appendChild(cardHeader);
-
-              
-
-              // create the card body with the recipe ingredients and directions
-              const cardBody = document.createElement('div');
-              cardBody.classList.add('card-body');
-
-              // ingredient header
-              const ingredientsHeader = document.createElement('h5');
-              ingredientsHeader.classList.add('card-title', 'mt-3');
-              ingredientsHeader.textContent = 'Ingredients:';
-              cardBody.appendChild(ingredientsHeader);
-
-              // add the ingredient list
-              const ingredientList = document.createElement('ul');
-              ingredientList.classList.add('list-group', 'list-group-flush');
-
-              // flatten the ingredients array
-              const flattenedIngredients = Ingredients.flat();
-              flattenedIngredients.forEach(ingredient => {
-                const listItem = document.createElement('li');
-                listItem.classList.add('list-group-item');
-                listItem.textContent = ingredient;
-                ingredientList.appendChild(listItem);
-              });
-              cardBody.appendChild(ingredientList);
-
-              // add the directions
-              const directionsHeader = document.createElement('h5');
-              directionsHeader.classList.add('card-title', 'mt-3');
-              directionsHeader.textContent = 'Directions:';
-              cardBody.appendChild(directionsHeader);
-
-              const directionsList = document.createElement('ul');
-
-              // flatten the directions array
-              const flattenedDirections = Directions.flat();
-              flattenedDirections.forEach(direction => {
-                const listItem = document.createElement('li');
-                listItem.textContent = direction;
-                directionsList.appendChild(listItem);
-              });
-              cardBody.appendChild(directionsList);
-
-              // chef's notes header
-              const notesHeader = document.createElement('h5');
-              notesHeader.classList.add('card-title', 'mt-3');
-              notesHeader.textContent = 'Chef Notes:';
-              cardBody.appendChild(notesHeader);
-
-              const notesBody = document.createElement('div');
-              notesBody.classList.add('card-body');
-              notesBody.innerHTML = Chef_Notes;
-              cardBody.appendChild(notesBody);
-
-              recipeCard.appendChild(cardBody);
-
-              const recipeContainer = document.createElement("div");
-              recipeContainer.classList.add("carousel-item");
-              recipeContainer.appendChild(recipeCard);
-
-              if (carouselInner.children.length === 0) {
-                recipeContainer.classList.add("active");
-              }
-              carouselInner.appendChild(recipeContainer);
-
-              // Trigger a click event on the next button to display the new item
-              const nextButton = document.querySelector(".carousel-control-next");
-              nextButton.click();
-
-
-              // create a new div element
-              /*const recipeContainer = document.createElement("div");
-              recipeContainer.id = "recipe-container";
-              recipeContainer.style.maxWidth = "800px";
-              recipeContainer.style.margin = "auto";
-              recipeContainer.style.display = "block";
-              recipeContainer.style.marginTop = "30px";
-              recipeContainer.appendChild(recipeCard);
-              document.body.appendChild(recipeContainer);*/
             });
+            buttonContainer.appendChild(button);
           });
-          buttonContainer.appendChild(button);
+          const oldButtonContainer = document.getElementById('meal-ideas-container');
+          if (oldButtonContainer) {
+            oldButtonContainer.remove();
+          }
+          buttonContainer.id = 'meal-ideas-container';
+  
+          window.scrollTo({
+            top: scrollPosition,
+            behavior: 'smooth'
+          });
+  
+          // Insert the new meal idea container element before the existing recipe container element, if it exists
+          const recipeContainer = document.getElementById('recipe-container');
+  
+          if (recipeContainer) {
+            recipeContainer.parentNode.insertBefore(buttonContainer, recipeContainer);
+          } else {
+            document.body.appendChild(buttonContainer);
+          }
         });
-        const oldButtonContainer = document.getElementById('meal-ideas-container');
-        if (oldButtonContainer) {
-          oldButtonContainer.remove();
-        }
-        buttonContainer.id = 'meal-ideas-container';
-
-        window.scrollTo({
-          top: scrollPosition,
-          behavior: 'smooth'
-        });
-
-        // Insert the new meal idea container element before the existing recipe container element, if it exists
-        const recipeContainer = document.getElementById('recipe-container');
-
-        if (recipeContainer) {
-          recipeContainer.parentNode.insertBefore(buttonContainer, recipeContainer);
-        } else {
-          document.body.appendChild(buttonContainer);
+        loader.classList.add("d-none");
+      });
+  
+    </script>
+  
+    <script>
+      const slider = document.getElementById('slider');
+      const sliderValue = document.getElementById('slider-value');
+  
+      slider.addEventListener('input', () => {
+        switch (slider.value) {
+          case '1':
+            sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Only ingredients from your list.</div>';
+            break;
+          case '2':
+            sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>';
+            break;
+          case '3':
+            sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Your ingredients for loose inspiration.</div>';
+            break;
         }
       });
-      loader.classList.add("d-none");
-    });
-
-  </script>
-
-  <script>
-    const slider = document.getElementById('slider');
-    const sliderValue = document.getElementById('slider-value');
-
-    slider.addEventListener('input', () => {
-      switch (slider.value) {
-        case '1':
-          sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Only ingredients from your list.</div>';
-          break;
-        case '2':
-          sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Ingredients from your list & other ingredients.</div>';
-          break;
-        case '3':
-          sliderValue.innerHTML = '<div style="text-align:center"><b>Chef-GPT will use:</b> Your ingredients for loose inspiration.</div>';
-          break;
-      }
-    });
-
-  </script>
-
-  <script>
-    const form = document.getElementById('ingredient-form');
-    const list = document.getElementById('ingredient-list');
-    
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const input = document.getElementById('textbox');
-      const ingredient = input.value.trim();
-      if (ingredient) {
-        const listItem = document.createElement('li');
-        const deleteButton = document.createElement('button');
-        deleteButton.className = 'btn btn-danger delete-button';
-        deleteButton.innerHTML = '<i class="bi bi-x"></i>';
-        deleteButton.addEventListener('click', () => {
-          list.removeChild(listItem);
+  
+    </script>
+  
+    <script>
+      const form = document.getElementById('ingredient-form');
+      const list = document.getElementById('ingredient-list');
+      
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const input = document.getElementById('textbox');
+        const ingredient = input.value.trim();
+        if (ingredient) {
+          const listItem = document.createElement('li');
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'btn btn-danger delete-button';
+          deleteButton.innerHTML = '<i class="bi bi-x"></i>';
+          deleteButton.addEventListener('click', () => {
+            list.removeChild(listItem);
+            fetch('/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                'remove': 'True',
+                'textbox': ingredient
+              })
+            }).then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                console.log('Ingredient added successfully.');
+              } else {
+                console.log('Failed to add ingredient.');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+            });
+          listItem.textContent = ingredient;
+          listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+          listItem.appendChild(deleteButton);
+          list.insertBefore(listItem, list.firstChild);
+          input.value = '';
+  
           fetch('/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              'remove': 'True',
+              'remove': 'False',
               'textbox': ingredient
             })
           }).then(response => response.json())
@@ -445,35 +536,44 @@
           .catch(error => {
             console.error('Error:', error);
           });
-          });
-        listItem.textContent = ingredient;
-        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-        listItem.appendChild(deleteButton);
-        list.insertBefore(listItem, list.firstChild);
-        input.value = '';
-
-        fetch('/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            'remove': 'False',
-            'textbox': ingredient
-          })
-        }).then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            console.log('Ingredient added successfully.');
-          } else {
-            console.log('Failed to add ingredient.');
+        }
+      });
+    </script>
+  
+  <script>
+    function toggleMode() {
+      var body = document.querySelector("body");
+      var allElements = document.querySelectorAll("body, body *:not(input):not(select)");
+      var modeButton = document.querySelector(".mode-toggle");
+  
+      if (body.classList.contains("dark-mode")) {
+        body.classList.remove("dark-mode");
+        modeButton.textContent = "Dark Mode";
+        modeButton.style.color = body.classList.contains("dark-mode") ? "" : "#fff";
+  
+        for (var i = 0; i < allElements.length; i++) {
+          var element = allElements[i];
+          element.style.color = "";
+          element.style.backgroundColor = "";
+        }
+      } else {
+        body.classList.add("dark-mode");
+        modeButton.textContent = "Light Mode";
+        for (var i = 0; i < allElements.length; i++) {
+          var element = allElements[i];
+          var computedStyle = getComputedStyle(element);
+          var currentColor = computedStyle.color;
+          var currentBackgroundColor = computedStyle.backgroundColor;
+          if (currentColor !== "rgb(0, 0, 0)" && currentColor !== "rgb(255, 255, 255)") {
+            element.style.color = "#fff";
           }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
+          if (currentBackgroundColor !== "rgb(0, 0, 0)" && currentBackgroundColor !== "rgb(255, 255, 255)") {
+            element.style.backgroundColor = "#000";
+          }
+        }
+        document.querySelector("html").style.backgroundColor = "#000";
       }
-    });
-  </script>
+    }
+    </script>
 </body>
 </html>

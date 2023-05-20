@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChefGPT - Login</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: #f8f9fa;
+            border-color: #0056b3;
+        }
+
+        a {
+            color: #007bff;
+        }
+
+        .card {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .card-title {
+            font-weight: 700;
+        }
+
+        .list-group-item {
+            position: relative;
+            border: none;
+            padding-left: 30px;
+            list-style: none;
+        }
+
+        .list-group-item::before {
+            display: none;
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: #007BFF;
+            border-radius: 50%;
+        }
+
+        .list-group-item i {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            margin-right: 10px;
+            color: #007BFF;
+            transition: all 0.3s;
+        }
+
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .list-group-item:hover i {
+            transform: translateY(-50%) scale(1.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="jumbotron text-center header-light" style="background-color: #f8f9fa;">
+        <button class="btn btn-sm btn-light mode-toggle" onclick="toggleMode()" style="position: fixed; top: 20px; right: 20px;">Light Mode</button>
+        <img src="/static/titleicon.png" alt="Image Description" width="12.5%" height="12.5%" style="padding-top: 10px;">
+        <h1 class="display-3" style="font-size: 2.5rem; padding-top: 5px;">Get Cooking with Chef-GPT</h1>
+        <hr class="my-4">
+        <p class="lead">Your Personal Sous-Chef for Creative Culinary Adventures</p>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title">Login</h1>
+                        {% if error %}
+                            <p>{{ error }}</p>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('login') }}">
+                            <div class="form-group">
+                                <input type="text" name="username" class="form-control" placeholder="Username" style="width: 350px;" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="password" class="form-control" placeholder="Password" style="width: 350px;" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </form> 
+                        <br>
+                        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title">Features</h1>
+                        <ul class="list-group">
+                            <li class="list-group-item"><i class="fas fa-utensils"></i> Create recipes tailored to your tastes, for free!</li>
+                            <li class="list-group-item"><i class="fas fa-smile"></i> Transform your cooking experience into a fun and effortless adventure</li>
+                            <li class="list-group-item"><i class="fas fa-leaf"></i> Minimize food waste while enjoying personalized meals with ingredients you already have</li>
+                            <li class="list-group-item"><i class="fas fa-cogs"></i> Join ChefGPT and unleash your inner chef with the help of our leading-edge AI technology</li>
+                            <!-- Add more features here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br><br><br><br><br>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
