@@ -14,7 +14,7 @@ import json
 ### check for any old code regarding add/remove ingredients, there might be some left over in index.html
 
 #activate api_key
-openai.api_key = "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"
+openai.api_key = ""
 
 def parse_recipe(recipe_text):
     recipe_dict = {'Title': '', 'Ingredients': [], 'Directions': [], 'Chef Notes': ''}
